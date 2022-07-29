@@ -7,7 +7,9 @@ import { CartItem } from '../common/cart-item';
 })
 export class CartService {
 
+
   cartItems: CartItem[] = [];
+  // unCartItem!: CartItem;
 
   totalPrice: Subject<number> = new Subject<number>();
   totalQuantity: Subject<number> = new Subject<number>();
@@ -18,21 +20,21 @@ export class CartService {
   addToCart(theCartItem: CartItem){
     // check if we already have the item in our cart
     let alreadyExistsInCart: boolean = false;
-    let existingCartItem: CartItem = theCartItem; // ???
+    let existingCartItem: CartItem | undefined; // ???
 
     if (this.cartItems.length > 0){
       // find the item in the cart based on item id
-      // existingCartItem = this.cartItems.find(tempCartItem => tempCartItem.id === theCartItem.id);
+      existingCartItem = this.cartItems.find(tempCartItem => tempCartItem.id === theCartItem.id);
       alreadyExistsInCart = (this.cartItems.find(tempCartItem => tempCartItem.id === theCartItem.id) != undefined);
     }
 
 
     //check if we found it
     // ???
-    alreadyExistsInCart = (existingCartItem != theCartItem);
+    alreadyExistsInCart = (existingCartItem != undefined);
 
     if (alreadyExistsInCart) {
-      existingCartItem.quantity++;
+      existingCartItem!.quantity++;
     }
     else{
       this.cartItems.push(theCartItem);
@@ -69,4 +71,25 @@ export class CartService {
     console.log(`totalPrice: ${totalPriceValue.toFixed(2)}, totalQuantity: ${totalQuantityValue}`);
     console.log('----');
   }
+
+  decrementQuantity(theCartItem: CartItem) {
+    theCartItem.quantity--;
+    if (theCartItem.quantity === 0){
+      this.remove(theCartItem);
+    }else{
+      this.computeCartTotals();
+    }
+  }
+  remove(theCartItem: CartItem) {
+    //get index of it item in the array
+    const itemIndex = this.cartItems.findIndex( tempCartItem => tempCartItem.id === theCartItem.id);
+
+    // if found, remove the item from the array at the given index
+    if (itemIndex > -1){
+      this.cartItems.splice(itemIndex, 1);
+
+      this.computeCartTotals();
+    }
+  }
+
 }
